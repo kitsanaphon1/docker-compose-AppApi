@@ -7,6 +7,24 @@ pipeline {
     }
 
     stages {
+        stage('Install Docker Compose') {
+            steps {
+                script {
+                    echo "🔧 กำลังติดตั้ง Docker Compose หากยังไม่ได้ติดตั้ง..."
+                    sh """
+                    if ! command -v docker-compose &> /dev/null; then
+                        echo "docker-compose ไม่พบ, กำลังติดตั้ง..."
+                        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                        sudo chmod +x /usr/local/bin/docker-compose
+                        echo "ติดตั้ง Docker Compose เสร็จสิ้น"
+                    else
+                        echo "docker-compose พบแล้ว"
+                    fi
+                    """
+                }
+            }
+        }
+
         stage('Pull Docker Images') {
             steps {
                 script {
