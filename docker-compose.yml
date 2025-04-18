@@ -26,7 +26,7 @@ services:
       timeout: 5s
 
   webapi:
-    image: sooyaa02/webappandapi:v1.7
+    image: sooyaa02/testbuildimages:latest
     container_name: webapi_container
     restart: always
     depends_on:
@@ -41,7 +41,7 @@ services:
       - mynetwork
 
   webapp:
-    image: sooyaa02/webapp:v1.5
+    image: sooyaa02/buildapp:latest
     container_name: webapp_container
     restart: always
     depends_on:
