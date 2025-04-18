@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // กำหนดตัวแปร Docker Compose file
+        // กำหนดตัวแปร Docker Compose file และ Docker context
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
+        DOCKER_CONTEXT = 'jenkins-remote-1' // ใช้ Docker context ที่ตั้งชื่อว่า jenkins-remote-1
     }
 
     stages {
@@ -11,6 +12,15 @@ pipeline {
             steps {
                 // ดึงโค้ดจาก Git repository
                 checkout scm
+            }
+        }
+
+        stage('Set Docker Context') {
+            steps {
+                script {
+                    // เลือก docker context ที่ต้องการใช้งาน
+                    sh "docker context use ${DOCKER_CONTEXT}"
+                }
             }
         }
 
@@ -26,7 +36,7 @@ pipeline {
         stage('Deploy Services') {
             steps {
                 script {
-                    // เริ่มต้น services ตามที่กำหนดใน docker-compose.yml
+                    // เริ่มต้น services ที่กำหนดใน docker-compose.yml
                     sh 'docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'
                 }
             }
@@ -36,8 +46,7 @@ pipeline {
             steps {
                 script {
                     // ตรวจสอบว่า deployment สำเร็จหรือไม่
-                    // ตัวอย่างเช่น ตรวจสอบการเชื่อมต่อกับ Web API
-                    sh 'curl -f http://localhost:5239/health || exit 1' // เพิ่มการตรวจสอบสุขภาพ (health check)
+                    sh 'curl -f http://localhost:5239/health || exit 1' // ตัวอย่าง health check
                 }
             }
         }
