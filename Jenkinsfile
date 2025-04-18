@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     echo "📥 กำลังดึง Docker images จากเครื่องปลายทาง..."
-                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE pull"
+                    sh "docker --context $CONTEXT_NAME run --rm -v $COMPOSE_FILE:/docker-compose.yml docker-compose pull"
                 }
             }
         }
@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     echo "🚀 กำลังเริ่ม Docker containers..."
-                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE up -d"
+                    sh "docker --context $CONTEXT_NAME run --rm -v $COMPOSE_FILE:/docker-compose.yml docker-compose up -d"
                 }
             }
         }
@@ -30,7 +30,6 @@ pipeline {
                 script {
                     echo "✅ กำลังตรวจสอบสถานะสุขภาพของบริการ..."
                     sh "docker --context $CONTEXT_NAME ps -a"
-                    // ถ้าต้องการสามารถเพิ่มขั้นตอนตรวจสุขภาพได้ที่นี่
                 }
             }
         }
@@ -39,7 +38,7 @@ pipeline {
             steps {
                 script {
                     echo "🧹 กำลังทำความสะอาด container ที่ไม่ได้ใช้..."
-                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE down"
+                    sh "docker --context $CONTEXT_NAME run --rm -v $COMPOSE_FILE:/docker-compose.yml docker-compose down"
                 }
             }
         }
