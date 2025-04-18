@@ -1,76 +1,42 @@
 pipeline {
-    agent any
-    
+    agent any  // ใช้ตัวแปร agent any เพื่อให้ Jenkins สามารถทำงานบนเครื่องใดก็ได้
+
     environment {
-        CONTEXT_NAME = 'jenkins-remote-1'  // ชื่อ Docker context สำหรับการเชื่อมต่อ SSH
-        COMPOSE_FILE = '/mnt/data/docker-compose.yml' // ที่อยู่ไฟล์ docker-compose.yml ของคุณ
+        DOCKER_CONTEXT = 'jenkins-remote-1'  // Docker Context ที่คุณตั้งไว้
     }
 
     stages {
-        stage('Install Docker Compose') {
+        stage('Clone GitHub Repo') {
             steps {
-                script {
-                    echo "🔧 กำลังติดตั้ง Docker Compose หากยังไม่ได้ติดตั้ง..."
-                    sh '''
-                    if ! command -v docker-compose &> /dev/null; then
-                        echo "docker-compose ไม่พบ, กำลังติดตั้ง..."
-                        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                        sudo chmod +x /usr/local/bin/docker-compose
-                        echo "ติดตั้ง Docker Compose เสร็จสิ้น"
-                    else
-                        echo "docker-compose พบแล้ว"
-                    fi
-                    '''
-                }
+                // ดึง (clone) repository จาก GitHub โดยใช้ข้อมูล credentials ที่กำหนดไว้
+                git credentialsId: "${GITHUB_CREDENTIALS_ID}", url: "${GITHUB_REPO_URL}"
             }
         }
 
-        stage('Pull Docker Images') {
+        stage('Run Docker Compose') {
             steps {
                 script {
-                    echo "📥 กำลังดึง Docker images จากเครื่องปลายทาง..."
-                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE pull"
-                }
-            }
-        }
-
-        stage('Start Containers') {
-            steps {
-                script {
-                    echo "🚀 กำลังเริ่ม Docker containers..."
-                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE up -d"
-                }
-            }
-        }
-
-        stage('Health Check') {
-            steps {
-                script {
-                    echo "✅ กำลังตรวจสอบสถานะสุขภาพของบริการ..."
-                    sh "docker --context $CONTEXT_NAME ps -a"
+                    // ใช้ Docker Context ที่ตั้งค่าไว้และรันคำสั่ง docker-compose ขึ้นมา
+                    // ในที่นี้จะรัน docker-compose.yml ที่ดึงมาจาก GitHub
+                    sh "docker --context ${DOCKER_CONTEXT} compose -f docker-compose.yml up -d"
                 }
             }
         }
 
         stage('Cleanup') {
             steps {
-                script {
-                    echo "🧹 กำลังทำความสะอาด container ที่ไม่ได้ใช้..."
-                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE down"
-                }
+                // หยุดและลบ container ที่รันอยู่
+                sh "docker --context ${DOCKER_CONTEXT} compose down"
             }
         }
     }
 
     post {
-        always {
-            echo "✅ งาน Docker Compose เสร็จสิ้น!"
-        }
         success {
-            echo "🎉 Pipeline ทำงานสำเร็จ!"
+            echo 'Docker Compose ทำงานสำเร็จ!'
         }
         failure {
-            echo "❌ Pipeline ล้มเหลว, โปรดตรวจสอบบันทึกข้อผิดพลาด."
+            echo 'Docker Compose ล้มเหลว!'
         }
     }
 }
