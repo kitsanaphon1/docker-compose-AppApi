@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     echo "📥 กำลังดึง Docker images จากเครื่องปลายทาง..."
-                    sh "docker --context $CONTEXT_NAME run --rm -v $COMPOSE_FILE:/docker-compose.yml docker-compose pull"
+                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE pull"
                 }
             }
         }
@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     echo "🚀 กำลังเริ่ม Docker containers..."
-                    sh "docker --context $CONTEXT_NAME run --rm -v $COMPOSE_FILE:/docker-compose.yml docker-compose up -d"
+                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE up -d"
                 }
             }
         }
@@ -38,7 +38,7 @@ pipeline {
             steps {
                 script {
                     echo "🧹 กำลังทำความสะอาด container ที่ไม่ได้ใช้..."
-                    sh "docker --context $CONTEXT_NAME run --rm -v $COMPOSE_FILE:/docker-compose.yml docker-compose down"
+                    sh "docker --context $CONTEXT_NAME compose -f $COMPOSE_FILE down"
                 }
             }
         }
