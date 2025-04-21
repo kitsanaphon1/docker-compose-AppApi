@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     COMPOSE_PROJECT_NAME = "sooyaa"
-    DOCKER_CONTEXT = "jenkins-remote-1"  // 👉 ใช้ docker context นี้
+    DOCKER_CONTEXT = "jenkins-remote"  // 👉 ใช้ docker context นี้
   }
 
   stages {
