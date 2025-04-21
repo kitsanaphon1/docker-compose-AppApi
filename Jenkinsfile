@@ -3,6 +3,7 @@ pipeline {
 
   environment {
     COMPOSE_PROJECT_NAME = "sooyaa"
+    DOCKER_CONTEXT = "jenkins-remote-1"  // 👉 ใช้ docker context นี้
   }
 
   stages {
@@ -15,9 +16,9 @@ pipeline {
     stage('Run docker-compose') {
       steps {
         sh '''
-          docker-compose down || true
-          docker-compose pull        # 👉 ดึง latest images (เผื่อมีการ push ใหม่)
-          docker-compose up -d
+          docker --context=$DOCKER_CONTEXT compose down || true
+          docker --context=$DOCKER_CONTEXT compose pull
+          docker --context=$DOCKER_CONTEXT compose up -d
         '''
       }
     }
