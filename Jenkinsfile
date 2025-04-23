@@ -3,7 +3,8 @@ pipeline {
 
   environment {
     COMPOSE_PROJECT_NAME = "sooyaa"
-    DOCKER_CONTEXT = "jenkins-remote"  // 👉 ใช้ docker context นี้
+    DOCKER_CONTEXT = "jenkins-remote"
+    DEPLOY_MODE = "up" // 👉 เปลี่ยนเป็น "down" ถ้าต้องการหยุด service
   }
 
   stages {
@@ -13,13 +14,23 @@ pipeline {
       }
     }
 
-    stage('Run docker-compose') {
+    stage('Docker Compose Action') {
       steps {
-        sh '''
-          docker --context=$DOCKER_CONTEXT compose down || true
-          docker --context=$DOCKER_CONTEXT compose pull
-          docker --context=$DOCKER_CONTEXT compose up -d
-        '''
+        script {
+          if (env.DEPLOY_MODE == 'up') {
+            sh '''
+              docker --context=$DOCKER_CONTEXT compose down || true
+              docker --context=$DOCKER_CONTEXT compose pull
+              docker --context=$DOCKER_CONTEXT compose up -d
+            '''
+          } else if (env.DEPLOY_MODE == 'down') {
+            sh '''
+              docker --context=$DOCKER_CONTEXT compose down
+            '''
+          } else {
+            error "Invalid DEPLOY_MODE: ${env.DEPLOY_MODE}"
+          }
+        }
       }
     }
   }
