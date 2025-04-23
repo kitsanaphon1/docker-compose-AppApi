@@ -4,7 +4,7 @@ pipeline {
   environment {
     COMPOSE_PROJECT_NAME = "sooyaa"
     DOCKER_CONTEXT = "jenkins-remote"
-    DEPLOY_MODE = "down" // 👉 เปลี่ยนเป็น "down" ถ้าต้องการหยุด service
+    DEPLOY_MODE = "up" // 👉 เปลี่ยนเป็น "down" ถ้าต้องการหยุด service
   }
 
   stages {
